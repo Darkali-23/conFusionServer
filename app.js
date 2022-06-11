@@ -2,6 +2,8 @@ var createError = require("http-errors");
 var express = require("express");
 var path = require("path");
 var cookieParser = require("cookie-parser");
+var session = require("express-session");
+var fileStore = require("session-file-store")(session);
 var logger = require("morgan");
 const mongoose = require("mongoose");
 
@@ -29,11 +31,19 @@ app.set("view engine", "jade");
 app.use(logger("dev"));
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
-app.use(cookieParser("Badhusha-2312"));
+//app.use(cookieParser("Badhusha-2312"));
+app.use(
+  session({
+    name: "session-id",
+    secret: "badhusha-2312",
+    saveUninitialized: false,
+    store: new fileStore(),
+  })
+);
 function auth(req, res, next) {
-  console.log(req.signedCookies);
+  console.log(req.session);
 
-  if (!req.signedCookies.user) {
+  if (!req.session.user) {
     var authHeader = req.headers.authorization;
     if (!authHeader) {
       var err = new Error("Sorry you are not allowed");
@@ -48,7 +58,7 @@ function auth(req, res, next) {
     var password = auth[1];
 
     if (username === "admin" && password === "password") {
-      res.cookie("user", "admin", { signed: true });
+      req.session.user = "admin";
       next();
     } else {
       var err = new Error("Sorry you are not allowed");
@@ -57,7 +67,7 @@ function auth(req, res, next) {
       return next(err);
     }
   } else {
-    if (req.signedCookies.user === "admin") {
+    if (req.session.user === "admin") {
       next();
     } else {
       var err = new Error("Sorry you are not allowed");
