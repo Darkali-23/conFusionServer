@@ -35,3 +35,21 @@ exports.jwtPassport = passport.use(
 );
 
 exports.verifyUser = passport.authenticate("jwt", { session: false });
+
+exports.verifyAdmin = (req, res, next) => {
+  User.findOne({ _id: req.user._id })
+    .then(
+      (user) => {
+        console.log("Admin is ", user);
+        if (user.admin) {
+          next();
+        } else {
+          var err = new Error("Sorry you are not admin to access this page");
+          err.status = 403;
+          return next(err);
+        }
+      },
+      (err) => next(err)
+    )
+    .catch((err) => next(err));
+};

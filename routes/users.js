@@ -3,12 +3,16 @@ var bodyParser = require("body-parser");
 var User = require("../models/user");
 var router = express.Router();
 var passport = require("passport");
-var authenticater = require("../authenticate");
+var authenticate = require("../authenticate");
 router.use(bodyParser.json());
 
 /* GET users listing. */
-router.get("/", function (req, res, next) {
-  res.send("respond with a resource");
+router.get("/", authenticate.verifyAdmin, function (req, res, next) {
+  User.find({}).then((user) => {
+    res.statusCode = 200;
+    res.setHeader("Content-Type", "application/json");
+    res.json({ user: user });
+  });
 });
 
 router.post("/signup", (req, res, next) => {
@@ -42,7 +46,7 @@ router.post("/signup", (req, res, next) => {
 });
 
 router.post("/login", passport.authenticate("local"), (req, res) => {
-  var token = authenticater.getToken({ _id: req.user._id });
+  var token = authenticate.getToken({ _id: req.user._id });
   res.statusCode = 200;
   res.setHeader("Content-Type", "application/json");
   res.json({
