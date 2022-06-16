@@ -17,6 +17,17 @@ var leaderRouter = require("./routes/leadersRouter");
 const Dishes = require("./models/dishes");
 var app = express();
 
+app.all("*", (req, res, next) => {
+  if (req.secure) {
+    return next();
+  } else {
+    res.redirect(
+      307,
+      "https://" + req.hostname + ":" + app.get("secPort") + req.url
+    );
+  }
+});
+
 const connect = mongoose.connect(config.mongoUrl);
 connect.then(
   (db) => {
