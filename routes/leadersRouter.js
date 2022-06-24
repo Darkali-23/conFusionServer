@@ -4,11 +4,13 @@ const mongoose = require("mongoose");
 const Leaders = require("../models/leader");
 const authenticate = require("../authenticate");
 const leadersRouter = express.Router();
+const cors = require("./cors");
 leadersRouter.use(bodyParser.json());
 
 leadersRouter
+  .options(cors.corsOps, (req, res) => (res.sendStatus = 200))
   .route("/")
-  .get((req, res, next) => {
+  .get(cors.cors, (req, res, next) => {
     Leaders.find({})
       .then(
         (lead) => {
@@ -22,24 +24,35 @@ leadersRouter
         console.log(err);
       });
   })
-  .post(authenticate.verifyUser, authenticate.verifyAdmin, (req, res, next) => {
-    Leaders.create(req.body)
-      .then(
-        (dish) => {
-          console.log("Dish Created ", dish);
-          res.statusCode = 200;
-          res.setHeader("Content-Type", "application/json");
-          res.json(dish);
-        },
-        (err) => next(err)
-      )
-      .catch((err) => next(err));
-  })
-  .put(authenticate.verifyUser, authenticate.verifyAdmin, (req, res, next) => {
-    res.statusCode = 403;
-    res.end("Put operation not supported now on leaders");
-  })
+  .post(
+    cors.corsOps,
+    authenticate.verifyUser,
+    authenticate.verifyAdmin,
+    (req, res, next) => {
+      Leaders.create(req.body)
+        .then(
+          (dish) => {
+            console.log("Dish Created ", dish);
+            res.statusCode = 200;
+            res.setHeader("Content-Type", "application/json");
+            res.json(dish);
+          },
+          (err) => next(err)
+        )
+        .catch((err) => next(err));
+    }
+  )
+  .put(
+    cors.corsOps,
+    authenticate.verifyUser,
+    authenticate.verifyAdmin,
+    (req, res, next) => {
+      res.statusCode = 403;
+      res.end("Put operation not supported now on leaders");
+    }
+  )
   .delete(
+    cors.corsOps,
     authenticate.verifyUser,
     authenticate.verifyAdmin,
     (req, res, next) => {
@@ -57,8 +70,10 @@ leadersRouter
   );
 
 leadersRouter
+  .options(cors.corsOps, (req, res) => (res.sendStatus = 200))
+
   .route("/:leadersId")
-  .get((req, res, next) => {
+  .get(cors.cors, (req, res, next) => {
     Leaders.findById(req.params.leadersId)
       .then(
         (lead) => {
@@ -70,26 +85,37 @@ leadersRouter
       )
       .catch((err) => next(err));
   })
-  .post(authenticate.verifyUser, authenticate.verifyAdmin, (req, res, next) => {
-    res.statusCode = 403;
-    res.end("Put operation not supported now on leaders");
-  })
-  .put(authenticate.verifyUser, authenticate.verifyAdmin, (req, res, next) => {
-    Leaders.findByIdAndUpdate(req.params.leadersId, {
-      $set: req.body,
-    })
-      .then(
-        (lead) => {
-          res.statusCode = 200;
-          res.setHeader("Content-Type", "application/json");
-          res.json(lead);
-        },
-        { new: true },
-        (err) => next(err)
-      )
-      .catch((err) => next(err));
-  })
+  .post(
+    cors.corsOps,
+    authenticate.verifyUser,
+    authenticate.verifyAdmin,
+    (req, res, next) => {
+      res.statusCode = 403;
+      res.end("Put operation not supported now on leaders");
+    }
+  )
+  .put(
+    cors.corsOps,
+    authenticate.verifyUser,
+    authenticate.verifyAdmin,
+    (req, res, next) => {
+      Leaders.findByIdAndUpdate(req.params.leadersId, {
+        $set: req.body,
+      })
+        .then(
+          (lead) => {
+            res.statusCode = 200;
+            res.setHeader("Content-Type", "application/json");
+            res.json(lead);
+          },
+          { new: true },
+          (err) => next(err)
+        )
+        .catch((err) => next(err));
+    }
+  )
   .delete(
+    cors.corsOps,
     authenticate.verifyUser,
     authenticate.verifyAdmin,
     (req, res, next) => {
