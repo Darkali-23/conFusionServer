@@ -11,7 +11,7 @@ leadersRouter
   .options(cors.corsOps, (req, res) => (res.sendStatus = 200))
   .route("/")
   .get(cors.cors, (req, res, next) => {
-    Leaders.find({})
+    Leaders.find(req.query)
       .then(
         (lead) => {
           res.statusCode = 200;
